@@ -3,6 +3,8 @@
 class cups (
   Array[String] $packages               = $::cups::params::packages,
   Boolean       $purge_unmanaged_queues = false,
+  Boolean       $InstallCups            = $::cups::params::InstallCups,
+  Boolean       $EnableCups             = $::cups::params::EnableCups,
   Array[String] $services               = $::cups::params::services,
   Optional[String]                    $default_queue = undef,
   Optional[Enum['merge', 'priority']] $hiera         = undef,
@@ -10,14 +12,29 @@ class cups (
   Optional[Hash]                      $resources     = undef,
 ) inherits cups::params {
 
-  package { $packages :
-    ensure  => 'present',
-  }
+# Fully manage CUPS via puppet  
 
-  service { $services :
-    ensure  => 'running',
-    enable  => true,
-    require => Package[$packages],
+  if $InstallCups {
+    package { $packages :
+      ensure  => 'present',
+    }
+  } else {
+    package { $packages :
+      ensure  => 'absent',
+    }
+  }
+  
+  if $EnableCups {
+    service { $services :
+      ensure  => 'running',
+      enable  => true,
+      require => Package[$packages],
+    }
+  } else {
+    service { $services :
+      ensure  => 'stopped',
+      enable  => false,
+    }
   }
 
   unless ($papersize == undef) {
