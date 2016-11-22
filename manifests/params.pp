@@ -4,6 +4,9 @@
 #
 class cups::params {
 
+  $InstallCups = true
+  $EnableCups = true
+  
   case $::osfamily {
     'Debian': {
       case $::operatingsystem {
